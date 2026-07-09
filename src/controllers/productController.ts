@@ -1,32 +1,18 @@
 import type { Request, Response } from "express";
 import { productService } from "../services/productService";
+import { SlugParams } from "../types/api";
+import { asyncHandler } from "../utils/asyncHandler";
 
 export const productController = {
-  async getAllProducts(_req: Request, res: Response) {
-    try {
-      const products = await productService.getProducts();
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({
-        message: error instanceof Error ? error.message : "Server error",
-      });
-    }
-  },
+  getAllProducts: asyncHandler(async (_req, res) => {
+    const products = await productService.getProducts();
 
-  async getProductBySlug(req: Request, res: Response) {
-    try {
-      const slug = req.params.slug;
+    res.json(products);
+  }),
 
-      if (typeof slug !== "string") {
-        return res.status(400).json({ message: "Invalid product slug" });
-      }
+  getProductBySlug: asyncHandler<SlugParams>(async (req, res) => {
+    const product = await productService.getProductBySlug(req.params.slug);
 
-      const product = await productService.getProductBySlug(slug);
-      res.json(product);
-    } catch (error) {
-      res.status(404).json({
-        message: error instanceof Error ? error.message : "Product not found",
-      });
-    }
-  },
+    res.json(product);
+  }),
 };

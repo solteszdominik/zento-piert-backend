@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import categoryRoutes from "./routes/categoryRoutes";
 import productRoutes from "./routes/productRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.get("/health", (_req, res) => {
 app.use("/categories", categoryRoutes);
 app.use("/products", productRoutes);
 app.use("/orders", orderRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

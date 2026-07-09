@@ -27,4 +27,39 @@ export const orderRepository = {
 
     return supabase.from("order_items").insert(orderItems).select("*");
   },
+
+  async findAll() {
+    return supabase
+      .from("orders")
+      .select(
+        `
+      *,
+      order_items (
+        id,
+        product_id,
+        product_name,
+        quantity
+      )
+    `,
+      )
+      .order("created_at", { ascending: false });
+  },
+
+  async findById(id: string) {
+    return supabase
+      .from("orders")
+      .select(
+        `
+      *,
+      order_items (
+        id,
+        product_id,
+        product_name,
+        quantity
+      )
+    `,
+      )
+      .eq("id", id)
+      .single();
+  },
 };
