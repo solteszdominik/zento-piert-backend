@@ -1,5 +1,5 @@
 import { orderRepository } from "../repositories/orderRepository";
-import type { CreateOrderInput } from "../types/order";
+import type { CreateOrderInput, OrderStatus } from "../types/order";
 import { AppError } from "../utils/AppError";
 
 export const orderService = {
@@ -17,30 +17,22 @@ export const orderService = {
       throw new AppError("Order must contain at least one item", 400);
     }
 
-    const { data: order, error: orderError } =
-      await orderRepository.createOrder(input);
+    const { data: order, error } =
+      await orderRepository.createOrderWithItems(input);
 
-    if (orderError || !order) {
-      throw new AppError(orderError?.message ?? "Failed to create order", 500);
-    }
-
-    const { data: items, error: itemsError } =
-      await orderRepository.createOrderItems(order.id, input.items);
-
-    if (itemsError) {
-      throw new AppError(itemsError.message, 500);
+    if (error || !order) {
+      throw new AppError(error?.message ?? "Failed to create order", 500);
     }
 
     return {
       order,
-      items,
     };
   },
   async getOrders() {
     const { data, error } = await orderRepository.findAll();
 
     if (error) {
-      throw new AppError("Failed to fetch orders", 500);
+      throw new AppError(error.message, 500);
     }
 
     return data;
@@ -50,7 +42,30 @@ export const orderService = {
     const { data, error } = await orderRepository.findById(id);
 
     if (error) {
-      throw new AppError("Failed to fetch order", 500);
+      throw new AppError(error.message, 500);
+    }
+
+    return data;
+  },
+  async updateOrderStatus(id: string, status: OrderStatus) {
+    const allowedStatuses: OrderStatus[] = [
+      "new",
+      "processing",
+      "completed",
+      "cancelled",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      throw new AppError("Invalid order status", 400);
+    }
+
+    const { data, error } = await orderRepository.updateStatus(id, status);
+
+    if (error || !data) {
+      throw new AppError(
+        error?.message ?? "Failed to update order status",
+        500,
+      );
     }
 
     return data;

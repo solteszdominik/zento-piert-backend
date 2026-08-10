@@ -1,4 +1,4 @@
-import type { CreateOrderInput } from "./order";
+import type { CreateOrderInput, UpdateOrderStatusInput } from "./order";
 
 export interface IdParams {
   id: string;
@@ -9,3 +9,4 @@ export interface SlugParams {
 }
 
 export type CreateOrderRequest = CreateOrderInput;
+export type UpdateOrderStatusRequest = UpdateOrderStatusInput;

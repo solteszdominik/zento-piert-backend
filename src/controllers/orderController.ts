@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { orderService } from "../services/orderService";
-import { CreateOrderRequest, IdParams } from "../types/api";
+import {
+  CreateOrderRequest,
+  IdParams,
+  UpdateOrderStatusRequest,
+} from "../types/api";
 import { asyncHandler } from "../utils/asyncHandler";
 
 export const orderController = {
@@ -25,4 +29,17 @@ export const orderController = {
 
     res.json(order);
   }),
+  updateOrderStatus: asyncHandler<IdParams, unknown, UpdateOrderStatusRequest>(
+    async (req, res) => {
+      const order = await orderService.updateOrderStatus(
+        req.params.id,
+        req.body.status,
+      );
+
+      res.json({
+        message: "Order status updated successfully",
+        data: order,
+      });
+    },
+  ),
 };

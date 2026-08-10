@@ -14,3 +14,7 @@ export interface CreateOrderInput {
   message?: string;
   items: CreateOrderItemInput[];
 }
+
+export interface UpdateOrderStatusInput {
+  status: OrderStatus;
+}

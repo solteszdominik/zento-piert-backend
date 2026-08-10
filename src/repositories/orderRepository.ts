@@ -62,4 +62,22 @@ export const orderRepository = {
       .eq("id", id)
       .single();
   },
+  async updateStatus(id: string, status: string) {
+    return supabase
+      .from("orders")
+      .update({ status })
+      .eq("id", id)
+      .select("*")
+      .single();
+  },
+  async createOrderWithItems(order: CreateOrderInput) {
+    return supabase.rpc("create_order_with_items", {
+      p_customer_name: order.customer_name,
+      p_customer_email: order.customer_email,
+      p_customer_phone: order.customer_phone,
+      p_customer_address: order.customer_address,
+      p_message: order.message ?? null,
+      p_items: order.items,
+    });
+  },
 };
