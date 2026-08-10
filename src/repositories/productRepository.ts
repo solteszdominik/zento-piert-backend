@@ -33,4 +33,11 @@ export const productRepository = {
       .eq("slug", slug)
       .single();
   },
+  async findById(id: string) {
+    return supabase
+      .from("products")
+      .select("id, name, is_available")
+      .eq("id", id)
+      .single();
+  },
 };

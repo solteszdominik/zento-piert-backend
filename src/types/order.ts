@@ -2,7 +2,6 @@ export type OrderStatus = "new" | "processing" | "completed" | "cancelled";
 
 export interface CreateOrderItemInput {
   product_id: string;
-  product_name: string;
   quantity: number;
 }
 
