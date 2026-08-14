@@ -10,10 +10,7 @@ export interface CreateOrderInput {
   customer_email: string;
   customer_phone: string;
   customer_address: string;
+  company_name?: string;
   message?: string;
   items: CreateOrderItemInput[];
-}
-
-export interface UpdateOrderStatusInput {
-  status: OrderStatus;
 }

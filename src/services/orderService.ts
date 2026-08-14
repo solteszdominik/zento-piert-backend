@@ -36,21 +36,27 @@ export const orderService = {
         return {
           product_id: product.id,
           product_name: product.name,
+          unit_price: Number(product.price),
           quantity: item.quantity,
         };
       }),
     );
 
+    const totalPrice = verifiedItems.reduce(
+      (total, item) => total + item.unit_price * item.quantity,
+      0,
+    );
+
     const { data: order, error } = await orderRepository.createOrderWithItems(
       input,
       verifiedItems,
+      totalPrice,
     );
 
     if (error || !order) {
       throw new AppError(error?.message ?? "Failed to create order", 500);
     }
 
-    // EMAIL KÜLDÉS IDE JÖN
     const emailEnabled = process.env.EMAIL_ENABLED === "true";
 
     if (emailEnabled) {

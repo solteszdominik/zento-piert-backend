@@ -36,7 +36,7 @@ export const productRepository = {
   async findById(id: string) {
     return supabase
       .from("products")
-      .select("id, name, is_available")
+      .select("id, name, price, is_available")
       .eq("id", id)
       .single();
   },

@@ -12,6 +12,8 @@ export const createOrderSchema = z.object({
 
     customer_address: z.string().min(5, "Customer address is required"),
 
+    company_name: z.string().max(200, "Company name is too long").optional(),
+
     message: z.string().max(1000, "Message is too long").optional(),
 
     items: z
