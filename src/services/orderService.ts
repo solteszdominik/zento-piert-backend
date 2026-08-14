@@ -51,20 +51,24 @@ export const orderService = {
     }
 
     // EMAIL KÜLDÉS IDE JÖN
-    const emailData = {
-      order_number: order.order_number,
-      customer_name: input.customer_name,
-      customer_email: input.customer_email,
-      customer_phone: input.customer_phone,
-      customer_address: input.customer_address,
-      message: input.message,
-      items: verifiedItems,
-    };
+    const emailEnabled = process.env.EMAIL_ENABLED === "true";
 
-    await Promise.all([
-      emailService.sendOrderConfirmation(emailData),
-      emailService.sendAdminOrderNotification(emailData),
-    ]);
+    if (emailEnabled) {
+      const emailData = {
+        order_number: order.order_number,
+        customer_name: input.customer_name,
+        customer_email: input.customer_email,
+        customer_phone: input.customer_phone,
+        customer_address: input.customer_address,
+        message: input.message,
+        items: verifiedItems,
+      };
+
+      await Promise.all([
+        emailService.sendOrderConfirmation(emailData),
+        emailService.sendAdminOrderNotification(emailData),
+      ]);
+    }
 
     return {
       order,

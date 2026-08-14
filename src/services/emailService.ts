@@ -16,7 +16,7 @@ if (!emailFrom) {
   throw new Error("Missing EMAIL_FROM");
 }
 
-const resend = new Resend(resendApiKey);
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface OrderEmailItem {
   product_name: string;
@@ -53,6 +53,10 @@ const createItemsHtml = (items: OrderEmailItem[]) => {
 export const emailService = {
   async sendOrderConfirmation(data: OrderEmailData) {
     const itemsHtml = createItemsHtml(data.items);
+
+    if (!resend) {
+      throw new Error("Email service not initialized");
+    }
 
     return resend.emails.send({
       from: emailFrom,
@@ -105,6 +109,10 @@ export const emailService = {
 
   async sendAdminOrderNotification(data: OrderEmailData) {
     const itemsHtml = createItemsHtml(data.items);
+
+    if (!resend) {
+      throw new Error("Email service not initialized");
+    }
 
     return resend.emails.send({
       from: emailFrom,
