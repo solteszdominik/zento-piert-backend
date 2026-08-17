@@ -10,11 +10,21 @@ export const createOrderSchema = z.object({
 
     customer_phone: z.string().min(7, "Invalid phone number"),
 
-    customer_address: z.string().min(5, "Customer address is required"),
+    postal_code: z.string().min(4, "Postal code is required"),
+
+    city: z.string().min(2, "City is required"),
+
+    street_address: z.string().min(5, "Street address is required"),
 
     company_name: z.string().max(200, "Company name is too long").optional(),
 
     message: z.string().max(1000, "Message is too long").optional(),
+
+    shipping_method: z.string().min(1, "Shipping method is required"),
+
+    terms_accepted: z.literal(true, {
+      message: "Terms must be accepted",
+    }),
 
     items: z
       .array(
