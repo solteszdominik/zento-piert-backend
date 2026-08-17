@@ -80,4 +80,21 @@ export const productRepository = {
       )
       .single();
   },
+
+  async create(input: UpdateProductInput) {
+    return supabase
+      .from("products")
+      .insert(input)
+      .select(
+        `
+      *,
+      categories (
+        id,
+        name,
+        slug
+      )
+    `,
+      )
+      .single();
+  },
 };
