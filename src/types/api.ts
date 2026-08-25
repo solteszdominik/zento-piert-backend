@@ -24,6 +24,9 @@ export interface UpdateProductRequest {
   is_available?: boolean;
   is_featured?: boolean;
   category_id?: string;
+  brand?: string | null;
+  product_line?: string | null;
+  package_size?: string | null;
 }
 
 export interface CreateProductRequest {
@@ -36,4 +39,7 @@ export interface CreateProductRequest {
   is_available: boolean;
   is_featured: boolean;
   category_id: string;
+  brand?: string | null;
+  product_line?: string | null;
+  package_size?: string | null;
 }

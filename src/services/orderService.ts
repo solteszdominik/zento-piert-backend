@@ -1,3 +1,4 @@
+import { env } from "../config/env";
 import { shippingMethods } from "../config/shipping";
 import { orderRepository } from "../repositories/orderRepository";
 import { productRepository } from "../repositories/productRepository";
@@ -76,7 +77,7 @@ export const orderService = {
       throw new AppError(error?.message ?? "Failed to create order", 500);
     }
 
-    const emailEnabled = process.env.EMAIL_ENABLED === "true";
+    const emailEnabled = env.EMAIL_ENABLED === "true";
 
     if (emailEnabled) {
       const emailData = {
@@ -89,10 +90,15 @@ export const orderService = {
         items: verifiedItems,
       };
 
-      await Promise.all([
+      Promise.all([
         emailService.sendOrderConfirmation(emailData),
         emailService.sendAdminOrderNotification(emailData),
-      ]);
+      ]).catch((emailError) => {
+        console.error(
+          `Email sending failed for order ${order.order_number}:`,
+          emailError,
+        );
+      });
     }
 
     return {

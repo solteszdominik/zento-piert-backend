@@ -10,6 +10,9 @@ export interface UpdateProductInput {
   is_available?: boolean;
   is_featured?: boolean;
   category_id?: string;
+  brand?: string | null;
+  product_line?: string | null;
+  package_size?: string | null;
 }
 
 export const productRepository = {

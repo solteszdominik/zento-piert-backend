@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+
 import { supabase } from "../config/supabase";
 import { adminRepository } from "../repositories/adminRepository";
 import { AppError } from "../utils/AppError";
@@ -15,7 +16,11 @@ export const requireAdmin = async (
       return next(new AppError("Unauthorized", 401));
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.slice("Bearer ".length).trim();
+
+    if (!token) {
+      return next(new AppError("Unauthorized", 401));
+    }
 
     const {
       data: { user },
@@ -38,7 +43,7 @@ export const requireAdmin = async (
     }
 
     next();
-  } catch {
-    next(new AppError("Unauthorized", 401));
+  } catch (error) {
+    next(error);
   }
 };

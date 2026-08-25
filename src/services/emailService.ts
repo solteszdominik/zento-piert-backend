@@ -4,22 +4,12 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 const emailFrom = process.env.EMAIL_FROM;
 
-if (!resendApiKey) {
-  throw new Error("Missing RESEND_API_KEY");
-}
-
-if (!adminEmail) {
-  throw new Error("Missing ADMIN_EMAIL");
-}
-
-if (!emailFrom) {
-  throw new Error("Missing EMAIL_FROM");
-}
-
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface OrderEmailItem {
   product_name: string;
+  unit: string;
+  unit_price: number;
   quantity: number;
 }
 
@@ -33,39 +23,75 @@ interface OrderEmailData {
   items: OrderEmailItem[];
 }
 
+function assertEmailConfigured() {
+  if (!resend) {
+    throw new Error("RESEND_API_KEY is not configured");
+  }
+
+  if (!emailFrom) {
+    throw new Error("EMAIL_FROM is not configured");
+  }
+}
+
+function assertAdminEmailConfigured() {
+  if (!adminEmail) {
+    throw new Error("ADMIN_EMAIL is not configured");
+  }
+}
+
+const escapeHtml = (value: string) => {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 const createItemsHtml = (items: OrderEmailItem[]) => {
   return items
-    .map(
-      (item) => `
+    .map((item) => {
+      const lineTotal = item.unit_price * item.quantity;
+
+      return `
         <tr>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">
-            ${item.product_name}
+            ${escapeHtml(item.product_name)}
           </td>
+
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">
-            ${item.quantity} db
+            ${item.quantity} ${escapeHtml(item.unit)}
+          </td>
+
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+            ${item.unit_price.toLocaleString("hu-HU")} Ft
+          </td>
+
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+            ${lineTotal.toLocaleString("hu-HU")} Ft
           </td>
         </tr>
-      `,
-    )
+      `;
+    })
     .join("");
 };
 
 export const emailService = {
   async sendOrderConfirmation(data: OrderEmailData) {
+    assertEmailConfigured();
+
     const itemsHtml = createItemsHtml(data.items);
 
-    if (!resend) {
-      throw new Error("Email service not initialized");
-    }
-
-    return resend.emails.send({
-      from: emailFrom,
+    return resend!.emails.send({
+      from: emailFrom!,
       to: data.customer_email,
       subject: `Rendelés visszaigazolása – ${data.order_number}`,
       html: `
         <h2>Köszönjük a rendelését!</h2>
 
-        <p>Kedves ${data.customer_name}!</p>
+        <p>
+          Kedves ${escapeHtml(data.customer_name)}!
+        </p>
 
         <p>
           Rendelését sikeresen rögzítettük.
@@ -73,7 +99,7 @@ export const emailService = {
 
         <p>
           <strong>Rendelésszám:</strong>
-          ${data.order_number}
+          ${escapeHtml(data.order_number)}
         </p>
 
         <table style="border-collapse: collapse; width: 100%;">
@@ -82,8 +108,17 @@ export const emailService = {
               <th style="text-align: left; padding: 8px;">
                 Termék
               </th>
+
               <th style="text-align: left; padding: 8px;">
                 Mennyiség
+              </th>
+
+              <th style="text-align: left; padding: 8px;">
+                Egységár
+              </th>
+
+              <th style="text-align: left; padding: 8px;">
+                Összeg
               </th>
             </tr>
           </thead>
@@ -95,55 +130,68 @@ export const emailService = {
 
         <p>
           <strong>Szállítási cím:</strong>
-          ${data.customer_address}
+          ${escapeHtml(data.customer_address)}
         </p>
+
+        ${
+          data.message
+            ? `
+              <p>
+                <strong>Megjegyzés:</strong>
+                ${escapeHtml(data.message)}
+              </p>
+            `
+            : ""
+        }
 
         <p>
           Hamarosan feldolgozzuk rendelését.
         </p>
 
-        <p>Üdvözlettel,<br>Zentó-Piért</p>
+        <p>
+          Üdvözlettel,<br />
+          Zentó-Piért
+        </p>
       `,
     });
   },
 
   async sendAdminOrderNotification(data: OrderEmailData) {
+    assertEmailConfigured();
+    assertAdminEmailConfigured();
+
     const itemsHtml = createItemsHtml(data.items);
 
-    if (!resend) {
-      throw new Error("Email service not initialized");
-    }
-
-    return resend.emails.send({
-      from: emailFrom,
-      to: adminEmail,
+    return resend!.emails.send({
+      from: emailFrom!,
+      to: adminEmail!,
       subject: `Új rendelés – ${data.order_number}`,
       html: `
         <h2>Új rendelés érkezett</h2>
 
         <p>
           <strong>Rendelésszám:</strong>
-          ${data.order_number}
+          ${escapeHtml(data.order_number)}
         </p>
 
         <p>
           <strong>Vásárló:</strong>
-          ${data.customer_name}
+          ${escapeHtml(data.customer_name)}
         </p>
 
         <p>
           <strong>E-mail:</strong>
-          ${data.customer_email}
+          ${escapeHtml(data.customer_email)}
         </p>
 
         <p>
           <strong>Telefon:</strong>
-          ${data.customer_phone}
+          ${escapeHtml(data.customer_phone)}
         </p>
 
         <p>
           <strong>Cím:</strong>
-          ${data.customer_address}
+          ${escapeHtml(data.customer_address)}
         </p>
 
         <table style="border-collapse: collapse; width: 100%;">
@@ -152,8 +200,17 @@ export const emailService = {
               <th style="text-align: left; padding: 8px;">
                 Termék
               </th>
+
               <th style="text-align: left; padding: 8px;">
                 Mennyiség
+              </th>
+
+              <th style="text-align: left; padding: 8px;">
+                Egységár
+              </th>
+
+              <th style="text-align: left; padding: 8px;">
+                Összeg
               </th>
             </tr>
           </thead>
@@ -165,7 +222,12 @@ export const emailService = {
 
         ${
           data.message
-            ? `<p><strong>Megjegyzés:</strong> ${data.message}</p>`
+            ? `
+              <p>
+                <strong>Megjegyzés:</strong>
+                ${escapeHtml(data.message)}
+              </p>
+            `
             : ""
         }
       `,

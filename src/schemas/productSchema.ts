@@ -38,6 +38,14 @@ export const updateProductSchema = z.object({
       is_featured: z.boolean().optional(),
 
       category_id: z.string().uuid("Invalid category ID").optional(),
+
+      brand: z.string().max(100, "Brand is too long").nullable().optional(),
+
+      product_line: z
+        .string()
+        .max(100, "Product line is too long")
+        .nullable()
+        .optional(),
     })
     .refine(
       (body) => Object.keys(body).length > 0,
@@ -78,5 +86,19 @@ export const createProductSchema = z.object({
     is_featured: z.boolean().default(false),
 
     category_id: z.string().uuid("Invalid category ID"),
+
+    brand: z.string().max(100, "Brand is too long").nullable().optional(),
+
+    product_line: z
+      .string()
+      .max(100, "Product line is too long")
+      .nullable()
+      .optional(),
+
+    package_size: z
+      .string()
+      .max(50, "Package size is too long")
+      .nullable()
+      .optional(),
   }),
 });
