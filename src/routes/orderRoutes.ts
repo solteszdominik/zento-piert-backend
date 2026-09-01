@@ -8,6 +8,7 @@ import { orderController } from "../controllers/orderController";
 import { validateRequest } from "../middleware/validateRequest";
 import { requireAdmin } from "../middleware/authMiddleware";
 import { orderRateLimiter } from "../middleware/rateLimit";
+import { requireOrdersEnabled } from "../middleware/ordersEnabled";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.get("/", requireAdmin, orderController.getAllOrders);
 router.get<IdParams>("/:id", requireAdmin, orderController.getOrderById);
 router.post(
   "/",
+  requireOrdersEnabled,
   orderRateLimiter,
   validateRequest(createOrderSchema),
   orderController.createOrder,
